@@ -1,4 +1,4 @@
-# 📸🐍 Scanimal
+# 🐍 Scanimal
 
 > **Fotografe. Identifique. Aja rápido.**
 
