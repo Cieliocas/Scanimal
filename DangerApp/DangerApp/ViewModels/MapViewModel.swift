@@ -2,7 +2,7 @@
 //  MapViewModel.swift
 //  DangerApp / Vitalis
 //
-//  Lógica da Tela 1 (Home / Mapa): nível de risco e marcadores mockados.
+//  Lógica da Tela 1 (Home / Mapa): nível de risco e marcadores integrados à API.
 //
 
 import Foundation
@@ -17,10 +17,40 @@ final class MapViewModel {
 
     /// Nível de risco da região, mostrado no card flutuante.
     var riskLevel: String = "ALTO"
+    
+    /// Estado de carregamento da API
+    var isLoading: Bool = false
+    
+    /// Mensagem de erro caso a conexão falhe
+    var errorMessage: String? = nil
 
-    /// Gera pontos mockados ao redor de uma coordenada (ex.: o usuário) para
-    /// que o mapa já renderize ocorrências na inicialização.
-    /// 🔧 Em produção, substituir por um GET no Node-RED (ex.: "/ocorrencias?lat=..&lon=..").
+    /// Busca as ocorrências reais salvas no backend IBM Node-RED.
+    @MainActor
+    func carregarMarcadoresDoNodeRed(around center: CLLocationCoordinate2D) async {
+        guard !isLoading else { return }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let path = "/ocorrencias?lat=\(center.latitude)&lon=\(center.longitude)"
+            let marcadoresRemotos: [ThreatMarker] = try await NetworkService.shared.get(path)
+            
+            if marcadoresRemotos.isEmpty {
+                generateMarkers(around: center)
+            } else {
+                self.markers = marcadoresRemotos
+            }
+        } catch {
+            self.errorMessage = "Node-RED offline. Usando dados locais."
+            print("Erro de conexão ao Node-RED: \(error.localizedDescription)")
+            generateMarkers(around: center)
+        }
+        
+        isLoading = false
+    }
+
+    /// Gera pontos mockados caso a API falhe ou esteja indisponível.
     func generateMarkers(around center: CLLocationCoordinate2D) {
         markers = [
             ThreatMarker(title: "Escorpião Amarelo",

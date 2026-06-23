@@ -6,7 +6,8 @@
 //  (carrossel) e "Animais Comuns" (grid de cards).
 //
 
-import SwiftUI
+import SwiftUI // <--- O segredo para corrigir todos os erros da imagem está aqui!
+import MapKit
 
 struct SearchView: View {
 
@@ -18,6 +19,9 @@ struct SearchView: View {
     ]
 
     var body: some View {
+        // Criamos o wrapper dinâmico para que o .searchable consiga fazer o Binding ($viewModel.query)
+        @Bindable var viewModel = viewModel
+        
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
@@ -134,7 +138,7 @@ private struct HospitalCard: View {
             Spacer(minLength: 0)
 
             Button {
-                // 🔧 Abrir rota no Apple Maps / Node-RED.
+                openRouteInMaps(for: hospital)
             } label: {
                 Label("Navegar", systemImage: "location.north.fill")
                     .font(.system(size: 16, weight: .semibold))
@@ -154,6 +158,16 @@ private struct HospitalCard: View {
         )
         .shadow(color: .black.opacity(0.04), radius: 12, y: 8)
     }
+
+    private func openRouteInMaps(for hospital: Hospital) {
+        let coordinate = CLLocationCoordinate2D(latitude: hospital.latitude, longitude: hospital.longitude)
+        let placemark = MKPlacemark(coordinate: coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = hospital.name
+        
+        let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+        mapItem.openInMaps(launchOptions: launchOptions)
+    }
 }
 
 // MARK: - Card de animal
@@ -163,8 +177,8 @@ private struct AnimalCard: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // Fundo tonal + símbolo grande (substitui a foto do design, offline).
             Color(hex: animal.tintHex)
+            
             Image(systemName: animal.symbol)
                 .font(.system(size: 96))
                 .foregroundStyle(.white.opacity(0.12))
@@ -180,7 +194,7 @@ private struct AnimalCard: View {
                     Circle()
                         .fill(Theme.danger)
                         .frame(width: 7, height: 7)
-                    Text(animal.level.rawValue)
+                    Text(animal.level.rawValue.uppercased())
                         .font(.system(size: 10, weight: .bold))
                         .tracking(1)
                         .foregroundStyle(.white)
