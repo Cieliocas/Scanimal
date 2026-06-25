@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  TELA 4 — Opções / Configurações. Form em estilo "inset grouped" do iOS,
 //  com versão do app, alternância de Modo Escuro, suporte e seção "Sobre".
@@ -90,7 +90,7 @@ struct SettingsView: View {
                             .frame(maxWidth: .infinity)
                     }
                 } footer: {
-                    Text("Desenvolvido para salvar vidas.\n© 2024 Vitalis Brazil.")
+                    Text("Desenvolvido para salvar vidas.\n© 2024 Scanimal Brazil.")
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                         .padding(.top, 8)
@@ -100,7 +100,7 @@ struct SettingsView: View {
             .background(Theme.groupedBackground)
             .navigationTitle("Configurações")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { VitalisLogo() }
+                ToolbarItem(placement: .topBarLeading) { ScanimalLogo() }
                 ToolbarItem(placement: .principal) {
                     Text("Opções")
                         .font(.system(size: 17, weight: .semibold))
@@ -166,7 +166,7 @@ private struct ManualView: View {
 private struct HelpView: View {
     var body: some View {
         List {
-            Text("Central de Ajuda do Vitalis.")
+            Text("Central de Ajuda do Scanimal.")
             Text("Em emergências, ligue 192 (SAMU).")
         }
         .navigationTitle("Central de Ajuda")

@@ -1,6 +1,6 @@
 //
 //  ChatView.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  TELA 3 — Chat com IA. Bolhas de mensagem (estilo iMessage), banner de
 //  emergência e campo de texto com anexo de imagem via PhotosPicker.
@@ -13,17 +13,37 @@ struct ChatView: View {
 
     @State private var viewModel = ChatViewModel()
     @State private var pickerItem: PhotosPickerItem?
+    @State private var showRestartConfirm = false
 
     var body: some View {
         VStack(spacing: 0) {
-            VitalisHeader {
-                Button {
-                    // 🔧 Discar emergência (192).
-                } label: {
-                    Image(systemName: "phone.fill")
-                        .foregroundStyle(Theme.onSurfaceVariant)
+            ScanimalHeader {
+                HStack(spacing: 18) {
+                    // Limpar Contexto: a IA passa a considerar só as próximas mensagens.
+                    Button {
+                        viewModel.clearContext()
+                    } label: {
+                        Image(systemName: "eraser.line.dashed")
+                    }
+                    .buttonStyle(.plain)
+
+                    // Reiniciar Chat: encerra a sessão e começa uma conversa em branco.
+                    Button {
+                        showRestartConfirm = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    .buttonStyle(.plain)
+
+                    // Emergência (192).
+                    Button {
+                        // 🔧 Discar emergência (192).
+                    } label: {
+                        Image(systemName: "phone.fill")
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+                .foregroundStyle(Theme.onSurfaceVariant)
             }
 
             emergencyBanner
@@ -31,6 +51,14 @@ struct ChatView: View {
             inputBar
         }
         .background(Theme.background)
+        .confirmationDialog("Reiniciar o chat?", isPresented: $showRestartConfirm, titleVisibility: .visible) {
+            Button("Reiniciar conversa", role: .destructive) {
+                viewModel.restartChat()
+            }
+            Button("Cancelar", role: .cancel) { }
+        } message: {
+            Text("Isso encerra a sessão atual e apaga todo o histórico.")
+        }
         // Carrega a imagem escolhida e a converte em Data (para Base64 no envio).
         .onChange(of: pickerItem) { _, item in
             Task {
@@ -172,6 +200,22 @@ private struct MessageBubble: View {
     private var isUser: Bool { message.role == .user }
 
     var body: some View {
+        // Aviso interno do app (ex.: "contexto limpo") — centralizado e discreto.
+        if message.role == .system {
+            Label(message.text, systemImage: "sparkles")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.onSurfaceVariant)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Theme.field, in: Capsule())
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 4)
+        } else {
+            bubble
+        }
+    }
+
+    private var bubble: some View {
         HStack {
             if isUser { Spacer(minLength: 50) }
 
@@ -217,9 +261,16 @@ private struct ScannerCard: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
+                // Fundo: gradiente base + imagem do Módulo de Visão da IA (Assets).
                 LinearGradient(colors: [Theme.field, Theme.onSurfaceVariant.opacity(0.25)],
                                startPoint: .topLeading, endPoint: .bottomTrailing)
-                    .frame(height: 150)
+
+                Image("aiVisionModule")
+                    .resizable()
+                    .scaledToFill()
+
+                // Camada escura para legibilidade do botão sobre a imagem.
+                Color.black.opacity(0.25)
 
                 PhotosPicker(selection: $pickerItem, matching: .images) {
                     Label("Abrir Scanner", systemImage: "camera.fill")
@@ -231,8 +282,10 @@ private struct ScannerCard: View {
                         .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
                 }
             }
+            .frame(height: 150)
+            .clipped()
 
-            Text("MÓDULO DE VISÃO VITALIS V2.0")
+            Text("MÓDULO DE VISÃO SCANIMAL V2.0")
                 .font(.system(size: 12, weight: .medium))
                 .tracking(0.5)
                 .foregroundStyle(Theme.onSurfaceVariant)

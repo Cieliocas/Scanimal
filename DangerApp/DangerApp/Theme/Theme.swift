@@ -1,6 +1,6 @@
 //
 //  Theme.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  Paleta de cores e tipografia extraídas do design (Stitch "Serpente").
 //  Mantém a identidade nativa iOS com suporte a Modo Claro/Escuro.
@@ -39,7 +39,7 @@ extension Color {
     }
 }
 
-// MARK: - Tokens de cor do app (Vitalis)
+// MARK: - Tokens de cor do app (Scanimal)
 
 enum Theme {
     // Marca / Saúde (System Teal)

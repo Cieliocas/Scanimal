@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  Navegação principal: TabView com exatamente 4 telas.
 //

@@ -1,6 +1,6 @@
 //
 //  SearchView.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  TELA 2 — Pesquisa. Campo `.searchable` nativo + seções "Hospitais Próximos"
 //  (carrossel) e "Animais Comuns" (grid de cards).
@@ -33,7 +33,7 @@ struct SearchView: View {
             }
             .background(Theme.background)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { VitalisLogo() }
+                ToolbarItem(placement: .topBarLeading) { ScanimalLogo() }
                 ToolbarItem(placement: .topBarTrailing) {
                     Image(systemName: "person.crop.circle")
                         .foregroundStyle(Theme.onSurfaceVariant)
@@ -178,11 +178,19 @@ private struct AnimalCard: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             Color(hex: animal.tintHex)
-            
+
+            // Marca d'água (SF Symbol) — fallback visual enquanto a foto não é adicionada.
             Image(systemName: animal.symbol)
                 .font(.system(size: 96))
                 .foregroundStyle(.white.opacity(0.12))
                 .offset(x: 30, y: -10)
+
+            // Foto do animal vinda dos Assets (Assets.xcassets/Animals/<imageName>).
+            if let imageName = animal.imageName {
+                Image(imageName)
+                    .resizable()
+                    .scaledToFill()
+            }
 
             LinearGradient(
                 colors: [.black.opacity(0.85), .black.opacity(0.1), .clear],
