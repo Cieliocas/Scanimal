@@ -1,6 +1,6 @@
 //
 //  Models.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 
 import Foundation
@@ -56,6 +56,7 @@ struct VenomousAnimal: Identifiable {
     let level: DangerLevel
     let symbol: String
     let tintHex: String
+<<<<<<< HEAD
 }
 
 enum DangerLevel: String {
@@ -90,6 +91,36 @@ struct ThreatMarker: Identifiable, Decodable {
         let lat = try container.decode(Double.self, forKey: .latitude)
         let lon = try container.decode(Double.self, forKey: .longitude)
         self.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+=======
+    /// Nome do imageset nos Assets (ex.: "jararaca"). Opcional: enquanto a foto
+    /// não é adicionada, o card usa o `symbol` (SF Symbol) como fallback visual.
+    let imageName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name, scientificName, level, symbol, tintHex, imageName
+    }
+
+    init(name: String, scientificName: String, level: VenomLevel, symbol: String, tintHex: String, imageName: String? = nil) {
+        self.name = name
+        self.scientificName = scientificName
+        self.level = level
+        self.symbol = symbol
+        self.tintHex = tintHex
+        self.imageName = imageName
+        self.id = UUID()
+    }
+
+    // Inicializador para decodificar o JSON vindo da API (imageName é opcional).
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.scientificName = try container.decode(String.self, forKey: .scientificName)
+        self.level = try container.decode(VenomLevel.self, forKey: .level)
+        self.symbol = try container.decode(String.self, forKey: .symbol)
+        self.tintHex = try container.decode(String.self, forKey: .tintHex)
+        self.imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
+        self.id = UUID()
+>>>>>>> 186f9bd006926be493cdb3e8eca0ddd338bda514
     }
 }
 
@@ -111,6 +142,7 @@ struct ChatMessage: Identifiable, Equatable {
     let isUser: Bool
     var timestamp: Date = Date()
     var imageData: Data? = nil
+<<<<<<< HEAD
     
     var role: MessageRole {
         return isUser ? .user : .assistant
@@ -130,6 +162,15 @@ struct ChatMessage: Identifiable, Equatable {
         self.isUser = (role == .user)
         self.timestamp = Date()
         self.imageData = imageData
+=======
+
+    enum Role {
+        case user
+        case assistant
+        /// Aviso interno do app (ex.: "contexto limpo"). Exibido na tela,
+        /// mas nunca enviado como contexto para a IA.
+        case system
+>>>>>>> 186f9bd006926be493cdb3e8eca0ddd338bda514
     }
 }
 

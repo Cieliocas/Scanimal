@@ -1,6 +1,6 @@
 //
 //  LocationManager.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  Encapsula o CLLocationManager para solicitar permissão e fornecer a
 //  localização do usuário de forma reativa (macro @Observable).

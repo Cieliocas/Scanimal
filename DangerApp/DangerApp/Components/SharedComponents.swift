@@ -1,19 +1,19 @@
 //
 //  SharedComponents.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  Componentes visuais reutilizados entre as telas (marca, barra superior).
 //
 
 import SwiftUI
 
-/// Logo da marca (ícone médico + "Vitalis") usado no topo das telas.
-struct VitalisLogo: View {
+/// Logo da marca (ícone médico + "Scanimal") usado no topo das telas.
+struct ScanimalLogo: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "cross.case.fill")
                 .font(.system(size: 20, weight: .bold))
-            Text("Vitalis")
+            Text("Scanimal")
                 .font(.system(size: 20, weight: .bold))
         }
         .foregroundStyle(Theme.primary)
@@ -22,13 +22,13 @@ struct VitalisLogo: View {
 
 /// Barra superior translúcida com a marca à esquerda e uma ação à direita.
 /// Usada nas telas que não dependem de NavigationStack (Mapa e Chat).
-struct VitalisHeader<Trailing: View>: View {
+struct ScanimalHeader<Trailing: View>: View {
     var centerTitle: String? = nil
     @ViewBuilder var trailing: Trailing
 
     var body: some View {
         HStack {
-            VitalisLogo()
+            ScanimalLogo()
             Spacer()
             if let centerTitle {
                 Text(centerTitle)
@@ -44,7 +44,7 @@ struct VitalisHeader<Trailing: View>: View {
     }
 }
 
-extension VitalisHeader where Trailing == EmptyView {
+extension ScanimalHeader where Trailing == EmptyView {
     init(centerTitle: String? = nil) {
         self.init(centerTitle: centerTitle) { EmptyView() }
     }

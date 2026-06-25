@@ -1,6 +1,6 @@
 //
 //  DangerAppApp.swift
-//  DangerApp / Vitalis
+//  DangerApp / Scanimal
 //
 //  Created by Franciélio Castro on 18/06/26.
 //
