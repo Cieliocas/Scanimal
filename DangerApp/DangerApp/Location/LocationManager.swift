@@ -25,22 +25,25 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        authorizationStatus = manager.authorizationStatus
+        // O status inicial será atualizado imediatamente pelo delegado 'locationManagerDidChangeAuthorization'
     }
 
-    /// Solicita permissão "Quando em uso" e começa a obter a localização.
+    /// Solicita permissão "Quando em uso" de forma assíncrona e segura para a Main Thread.
+    @MainActor
     func requestPermission() {
+        // Dispara diretamente o pedido nativo da Apple.
+        // Se o usuário já respondeu no passado, o iOS gerencia e apenas ignora visualmente.
         manager.requestWhenInUseAuthorization()
-        manager.startUpdatingLocation()
     }
 
-    // MARK: CLLocationManagerDelegate
+    // MARK: - CLLocationManagerDelegate
     // Os callbacks chegam na thread principal (manager criado na main),
     // por isso usamos `MainActor.assumeIsolated` para atualizar o estado observável.
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         MainActor.assumeIsolated {
-            authorizationStatus = manager.authorizationStatus
+            self.authorizationStatus = manager.authorizationStatus
+            
             if manager.authorizationStatus == .authorizedWhenInUse ||
                manager.authorizationStatus == .authorizedAlways {
                 manager.startUpdatingLocation()
@@ -51,7 +54,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         MainActor.assumeIsolated {
-            lastLocation = UserLocation(
+            self.lastLocation = UserLocation(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude
             )
@@ -59,6 +62,6 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // Em produção: tratar/registrar o erro. Para o protótipo, ignoramos.
+        print("Erro no CoreLocation: \(error.localizedDescription)")
     }
 }

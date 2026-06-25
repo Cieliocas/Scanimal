@@ -2,169 +2,140 @@
 //  Models.swift
 //  DangerApp / Vitalis
 //
-//  Modelos de dados integrados de forma nativa usados pelas telas.
-//
 
 import Foundation
 import CoreLocation
 
-// MARK: - Mapa
-
-/// Nível/Tipo de um ponto exibido no mapa.
-enum ThreatKind: String, Decodable {
-    case highRisk   = "highRisk"   // Ocorrência de animal de alto risco (ex.: escorpião)
-    case mediumRisk = "mediumRisk" // Ocorrência de risco médio (ex.: serpente avistada)
-    case hospital   = "hospital"   // Unidade de saúde com soro
-
-    var symbol: String {
-        switch self {
-        case .highRisk:   return "ant.fill"
-        case .mediumRisk: return "lizard.fill"
-        case .hospital:   return "cross.case.fill"
-        }
-    }
-}
-
-/// Marcador renderizado no mapa (zona de ameaça, ocorrência ou hospital).
-struct ThreatMarker: Identifiable, Decodable {
-    var id = UUID()
-    let title: String
-    let latitude: Double
-    let longitude: Double
-    let kind: ThreatKind
-    
-    var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case title, latitude, longitude, kind
-    }
-    
-    // Inicializador manual para os Mocks locais do MapViewModel
-    init(title: String, coordinate: CLLocationCoordinate2D, kind: ThreatKind) {
-        self.title = title
-        self.latitude = coordinate.latitude
-        self.longitude = coordinate.longitude
-        self.kind = kind
-        self.id = UUID()
-    }
-    
-    // Inicializador para decodificar o JSON vindo do Node-RED
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.title = try container.decode(String.self, forKey: .title)
-        self.latitude = try container.decode(Double.self, forKey: .latitude)
-        self.longitude = try container.decode(Double.self, forKey: .longitude)
-        self.kind = try container.decode(ThreatKind.self, forKey: .kind)
-        self.id = UUID()
-    }
-}
-
-// MARK: - Pesquisa
-
-/// Hospital / unidade de saúde com soro antiofídico integrado ao GPS.
+// MARK: - Modelo de Hospital
 struct Hospital: Identifiable, Decodable {
-    var id = UUID()
+    var id: String { name + address }
+    
     let name: String
     let address: String
     let latitude: Double
     let longitude: Double
-    var distanceKm: Double = 0.0
     let isOpen: Bool
     
-    var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
+    /// Corrigido: Não opcional para evitar erros na SearchView
+    var distanceKm: Double = 0.0
+    
+    /// Estoque de antídotos enviados pelo Node-RED
+    var availableAntivenoms: [String]
     
     enum CodingKeys: String, CodingKey {
-        case name, address, latitude, longitude, isOpen
+        case name, address, latitude, longitude, isOpen, availableAntivenoms
     }
     
-    // Inicializador manual para os Mocks locais do SearchViewModel
-    init(name: String, address: String = "", latitude: Double, longitude: Double, isOpen: Bool) {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.address = try container.decode(String.self, forKey: .address)
+        self.latitude = try container.decode(Double.self, forKey: .latitude)
+        self.longitude = try container.decode(Double.self, forKey: .longitude)
+        self.isOpen = try container.decode(Bool.self, forKey: .isOpen)
+        self.availableAntivenoms = try container.decode([String].self, forKey: .availableAntivenoms)
+        self.distanceKm = 0.0
+    }
+    
+    init(name: String, address: String, latitude: Double, longitude: Double, isOpen: Bool, availableAntivenoms: [String], distanceKm: Double = 0.0) {
         self.name = name
         self.address = address
         self.latitude = latitude
         self.longitude = longitude
         self.isOpen = isOpen
-        self.distanceKm = 0.0
-        self.id = UUID()
-    }
-    
-    // Inicializador para decodificar o JSON vindo do Node-RED
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.name = try container.decode(String.self, forKey: .name)
-        self.address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
-        self.latitude = try container.decode(Double.self, forKey: .latitude)
-        self.longitude = try container.decode(Double.self, forKey: .longitude)
-        self.isOpen = try container.decode(Bool.self, forKey: .isOpen)
-        self.distanceKm = 0.0
-        self.id = UUID()
+        self.availableAntivenoms = availableAntivenoms
+        self.distanceKm = distanceKm
     }
 }
 
-/// Grau de periculosidade exibido no card do animal.
-enum VenomLevel: String, Decodable {
-    case fatal     = "RISCO FATAL"
-    case extreme   = "EXTREMO PERIGO"
-    case veryHigh  = "ALTAMENTE VENENOSA"
-    case venomous  = "VENENOSO"
-}
-
-/// Animal peçonhento comum na região.
-struct VenomousAnimal: Identifiable, Decodable {
-    var id = UUID()
+// MARK: - Modelo de Animais Peçonhentos
+struct VenomousAnimal: Identifiable {
+    var id: String { name }
     let name: String
     let scientificName: String
-    let level: VenomLevel
+    let level: DangerLevel
     let symbol: String
     let tintHex: String
+}
+
+enum DangerLevel: String {
+    case venomous = "Peçonhento"
+    case veryHigh = "Muito Alto"
+    case extreme = "Extremo"
+    case fatal = "Fatal"
+}
+
+// MARK: - Modelo de Marcadores do Mapa
+struct ThreatMarker: Identifiable, Decodable {
+    var id: String { title + "\(coordinate.latitude)-\(coordinate.longitude)" }
+    let title: String
+    let coordinate: CLLocationCoordinate2D
+    let kind: MarkerKind
     
     enum CodingKeys: String, CodingKey {
-        case name, scientificName, level, symbol, tintHex
+        case title, latitude, longitude, kind
+    }
+    
+    init(title: String, coordinate: CLLocationCoordinate2D, kind: MarkerKind) {
+        self.title = title
+        self.coordinate = coordinate
+        self.kind = kind
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.title = try container.decode(String.self, forKey: .title)
+        self.kind = try container.decode(MarkerKind.self, forKey: .kind)
+        
+        let lat = try container.decode(Double.self, forKey: .latitude)
+        let lon = try container.decode(Double.self, forKey: .longitude)
+        self.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
     }
 }
 
-// MARK: - Payloads da Rede (Chat)
-
-struct ChatRequest: Encodable {
-    let message: String
-    let imageBase64: String?
+enum MarkerKind: String, Decodable {
+    case highRisk
+    case mediumRisk
+    case hospital
 }
 
-struct ChatResponse: Decodable {
-    let reply: String
+// MARK: - Modelo do Chat (ChatMessage)
+enum MessageRole: String, Codable {
+    case user
+    case assistant
 }
 
-// MARK: - Interface do Chat
-
-/// Mensagem da conversa com a IA.
 struct ChatMessage: Identifiable, Equatable {
-    let id = UUID()
-    let role: Role
+    var id: UUID = UUID()
     let text: String
+    let isUser: Bool
+    var timestamp: Date = Date()
     var imageData: Data? = nil
-
-    enum Role {
-        case user
-        case assistant
+    
+    var role: MessageRole {
+        return isUser ? .user : .assistant
+    }
+    
+    init(id: UUID = UUID(), text: String, isUser: Bool, timestamp: Date = Date(), imageData: Data? = nil) {
+        self.id = id
+        self.text = text
+        self.isUser = isUser
+        self.timestamp = timestamp
+        self.imageData = imageData
+    }
+    
+    init(text: String, role: MessageRole = .user, imageData: Data? = nil) {
+        self.id = UUID()
+        self.text = text
+        self.isUser = (role == .user)
+        self.timestamp = Date()
+        self.imageData = imageData
     }
 }
 
-// MARK: - Localização
-
-/// Wrapper Equatable para a coordenada do usuário.
-struct UserLocation: Equatable {
-    let latitude: Double
-    let longitude: Double
-
-    var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+// MARK: - Extensão Global da String
+extension String {
+    func whitespacesRemovedAndLowercased() -> String {
+        self.replacingOccurrences(of: " ", with: "").lowercased()
     }
-}
-
-extension CLLocationCoordinate2D {
-    static let saoPaulo = CLLocationCoordinate2D(latitude: -23.5558, longitude: -46.6396)
 }

@@ -279,7 +279,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DangerApp/Info.plist;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos sua localização para mostrar zonas de risco e hospitais com soro próximos a você.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Precisamos da sua localização para mapear os riscos e pontos de ajuda ao seu redor.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -313,7 +313,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DangerApp/Info.plist;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos sua localização para mostrar zonas de risco e hospitais com soro próximos a você.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Precisamos da sua localização para mapear os riscos e pontos de ajuda ao seu redor.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
