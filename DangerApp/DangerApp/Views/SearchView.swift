@@ -32,6 +32,7 @@ struct SearchView: View {
                 .padding(.bottom, 24)
             }
             .background(Theme.background)
+            .onAppear { viewModel.iniciarGPS() }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { ScanimalLogo() }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -57,6 +58,27 @@ struct SearchView: View {
                          subtitle: "Unidades com soro antiofídico")
                 .padding(.horizontal, 16)
 
+            // Filtro de emergência ativo: hospitais com antídoto para o animal escolhido.
+            if let emergency = viewModel.selectedAnimalForEmergency {
+                Button {
+                    viewModel.selectedAnimalForEmergency = nil
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "cross.case.fill")
+                        Text("Emergência: \(emergency.name)")
+                            .fontWeight(.semibold)
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.onPrimary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(Theme.danger, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+            }
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(viewModel.hospitals) { hospital in
@@ -73,11 +95,22 @@ struct SearchView: View {
     private var animalsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             SectionTitle(title: "Animais Comuns",
-                         subtitle: "Identificação rápida na sua região")
+                         subtitle: "Toque para ver hospitais com o antídoto")
 
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.animals) { animal in
-                    AnimalCard(animal: animal)
+                    Button {
+                        // Aciona/limpa o filtro de emergência por antídoto.
+                        if viewModel.selectedAnimalForEmergency?.id == animal.id {
+                            viewModel.selectedAnimalForEmergency = nil
+                        } else {
+                            viewModel.selectedAnimalForEmergency = animal
+                        }
+                    } label: {
+                        AnimalCard(animal: animal,
+                                   isSelected: viewModel.selectedAnimalForEmergency?.id == animal.id)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -174,6 +207,7 @@ private struct HospitalCard: View {
 
 private struct AnimalCard: View {
     let animal: VenomousAnimal
+    var isSelected: Bool = false
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -219,6 +253,10 @@ private struct AnimalCard: View {
         }
         .frame(height: 200)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Theme.danger, lineWidth: isSelected ? 3 : 0)
+        )
     }
 }
 
